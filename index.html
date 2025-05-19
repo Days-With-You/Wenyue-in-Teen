@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="zh">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wenyue in Teen - Test for the World at Present</title>
+    <style>
+        body {
+            font-family: 'Microsoft YaHei', sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        .container {
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .question {
+            margin-bottom: 20px;
+        }
+        .options {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+        .option {
+            padding: 10px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        .option:hover {
+            background-color: #f0f0f0;
+        }
+        .feedback {
+            text-align: center;
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 5px;
+        }
+        .correct {
+            background-color: #dff0d8;
+            color: #3c763d;
+        }
+        .incorrect {
+            background-color: #f2dede;
+            color: #a94442;
+        }
+        .result {
+            text-align: center;
+            font-size: 24px;
+            margin: 20px 0;
+        }
+        .next-button {
+            display: block;
+            margin: 20px auto;
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .next-button:hover {
+            background-color: #45a049;
+        }
+        .feedback-image {
+            max-width: 100%;
+            height: auto;
+            margin: 20px 0;
+            border-radius: 5px;
+        }
+        .special-message {
+            color: #8FBC8F;
+            font-size: 20px;
+            margin: 20px 0;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div id="question-container">
+            <h2>问题 <span id="current-question">1</span>/8</h2>
+            <div id="question-content"></div>
+            <div class="options" id="options-container"></div>
+        </div>
+        <div id="feedback-container" style="display: none;">
+            <div id="feedback-content"></div>
+            <img id="feedback-image" class="feedback-image" style="display: none;">
+            <button class="next-button" onclick="nextQuestion()">下一题</button>
+        </div>
+        <div id="result-container" style="display: none;">
+            <h2>答题结果</h2>
+            <div class="result">
+                你的正确率是：<span id="score">0</span>%
+            </div>
+            <div id="special-message" class="special-message" style="display: none;"></div>
+            <button class="next-button" onclick="restartQuiz()">重新开始</button>
+        </div>
+    </div>
+
+    <script>
+        const questions = [
+            {
+                question: "2020.10.21，时年15岁的小越面对被迫做自己不想干的事，会在日记里：",
+                options: ["破口大骂", "认真制定解决方案", "开始emo"],
+                correct: 0
+            },
+            {
+                question: "2021.10.19，时年16岁的小越认为人理想的生活状态中，用于工作的时间（每日）为：",
+                options: ["10h", "6h", "2h"],
+                correct: 0
+            },
+            {
+                question: "2021.8.25，时年16岁的小越和朋友的上课时的娱乐方式是",
+                options: ["讲小话", "传纸条", "眼神示意"],
+                correct: 1
+            },
+            {
+                question: "2022.5.1，时年将近17岁的小越emo时，写日记使用的手法：",
+                options: ["叙事+抒情（讲一讲为什么难过）", "议论（怒斥谁不对）", "意识流"],
+                correct: 2
+            },
+            {
+                question: "2022.7.1，时年17岁的小越（仍然坚持在写）的小说主人公名字会是",
+                options: ["Evelyn Rose", "云浅梦", "iiLin"],
+                correct: 2
+            },
+            {
+                question: "2022.7.31，时年17岁的小越面对苏格拉底和柏拉图的不同的观点，会：",
+                options: ["直接开始批判苏、柏", "辩证地看待问题", "开始批判自己"],
+                correct: 0
+            },
+            {
+                question: "2023.1.3，时年17岁的小越给自己的新年祝词是",
+                options: ["悟已往之不谏，知来者尤可追", "成为你自己", "考完玩塞尔达去"],
+                correct: 1
+            },
+            {
+                question: "2022.6.26，时年17岁的小越不想理一个人的遣词造句是：",
+                options: ["不想鸟xxx", "雨我无瓜", "懒得搭理xx"],
+                correct: 0
+            }
+        ];
+
+        let currentQuestion = 0;
+        let score = 0;
+
+        // 每题解析内容
+        const explanations = [
+            '暴躁小越。',
+            '好卷的高中。我是高考幸存者。',
+            '整个高中生涯传纸条被抓到次数：0。',
+            '这使得我回看日记完全不知道当时是因为什么事情伤心了。',
+            '啊啊。其实是很棒的小说，只是除了我可能都不知道在写什么。',
+            '我希望现在大家不要去和以前的小越辩论。',
+            '祝词还是写得很正常。',
+            '阿辉是班主任。不想理他是因为他监视我们学习（？）。',
+        ];
+
+        function showQuestion() {
+            const question = questions[currentQuestion];
+            document.getElementById('current-question').textContent = currentQuestion + 1;
+            document.getElementById('question-content').textContent = question.question;
+            
+            const optionsContainer = document.getElementById('options-container');
+            optionsContainer.innerHTML = '';
+            
+            question.options.forEach((option, index) => {
+                const button = document.createElement('div');
+                button.className = 'option';
+                button.textContent = option;
+                button.onclick = () => checkAnswer(index);
+                optionsContainer.appendChild(button);
+            });
+
+            document.getElementById('question-container').style.display = 'block';
+            document.getElementById('feedback-container').style.display = 'none';
+            document.getElementById('result-container').style.display = 'none';
+        }
+
+        function checkAnswer(selectedIndex) {
+            const question = questions[currentQuestion];
+            const isCorrect = selectedIndex === question.correct;
+            
+            if (isCorrect) {
+                score++;
+            }
+
+            document.getElementById('question-container').style.display = 'none';
+            document.getElementById('feedback-container').style.display = 'block';
+            
+            const feedbackContent = document.getElementById('feedback-content');
+            feedbackContent.innerHTML = (isCorrect ? '答对了！' : '答错了！') + '<br><span style="font-size:16px;color:#555;">' + explanations[currentQuestion] + '</span>';
+            feedbackContent.className = 'feedback ' + (isCorrect ? 'correct' : 'incorrect');
+
+            // 显示对应的图片
+            const feedbackImage = document.getElementById('feedback-image');
+            feedbackImage.src = `question${currentQuestion + 1}.jpg`;
+            feedbackImage.style.display = 'block';
+        }
+
+        function nextQuestion() {
+            currentQuestion++;
+            if (currentQuestion < questions.length) {
+                showQuestion();
+            } else {
+                showResult();
+            }
+        }
+
+        function showResult() {
+            document.getElementById('question-container').style.display = 'none';
+            document.getElementById('feedback-container').style.display = 'none';
+            document.getElementById('result-container').style.display = 'block';
+            
+            const percentage = (score / questions.length * 100).toFixed(2);
+            document.getElementById('score').textContent = percentage;
+
+            // 检查是否需要显示特殊消息
+            const specialMessage = document.getElementById('special-message');
+            specialMessage.style.display = 'block';
+            if (percentage === '100.00') {
+                specialMessage.textContent = '看来你很能猜透以前的小越哦！凭借本截屏摇现在的小越吃饭，小越必然会想和你去！';
+            } else if (percentage >= 80.00 && percentage < 100.00) {
+                specialMessage.textContent = '你能猜对小越的大部分心思哦，牛！';
+            } else if (percentage < 25.00) {
+                specialMessage.textContent = '你的错误率比乱选要高喔';
+            } else {
+                specialMessage.style.display = 'none';
+            }
+        }
+
+        function restartQuiz() {
+            currentQuestion = 0;
+            score = 0;
+            showQuestion();
+        }
+
+        // 开始显示第一个问题
+        showQuestion();
+    </script>
+</body>
+</html> 
