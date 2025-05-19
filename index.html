@@ -233,7 +233,9 @@
                 specialMessage.textContent = '看来你很能猜透以前的小越哦！凭借本截屏摇现在的小越吃饭，小越必然会想和你去！';
             } else if (percentage >= 80.00 && percentage < 100.00) {
                 specialMessage.textContent = '你能猜对小越的大部分心思哦，牛！';
-            } else if (percentage < 25.00) {
+            } else if (percentage >= 60.00) {
+                specialMessage.textContent = '及格了！虽然不是特别高但是还不错！';
+            } else if (percentage < 33.00) {
                 specialMessage.textContent = '你的错误率比乱选要高喔';
             } else {
                 specialMessage.style.display = 'none';
